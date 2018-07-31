@@ -18,21 +18,21 @@ $ wget --quiet https://github.com/DSPN/kubernetes-dse/raw/master/local/dse-suite
 $ kubectl apply -f dse-suite-local.yaml
 ```
 
-#### 2. Running DSE + OpsCenter on Azure Container Service (AKS)
+#### 2. Running DSE + OpsCenter on Azure Container Service (AKS) [sample]
 *This yamls set uses kubernetes.io/azure-disk provisioner along with Premium_LRS storage type on Azure*
 ```
 $ wget --quiet https://github.com/DSPN/kubernetes-dse/raw/master/aks/dse-suite.yaml -O dse-suite-aks.yaml
 $ kubectl apply -f dse-suite-aks.yaml
 ```
 
-#### 3. Running DSE + OpsCenter on Amazon Elastic Container Service (EKS)
-*This yamls set uses kubernetes.io/aws-ebs provisioner along with ext4 filesystem type and IOPS per GB rate 10* 
+#### 3. Running DSE + OpsCenter on Amazon Elastic Container Service (EKS) in us-west-2a [sample]
+*This yamls set uses kubernetes.io/aws-ebs provisioner along with ext4 filesystem type and IOPS per GB rate 10 in us-west-2a.  You will need to modify the StorageClass definition if you plan to deploy in different AWS zone.* 
 ```
 $ wget --quiet https://github.com/DSPN/kubernetes-dse/raw/master/eks/dse-suite.yaml -O dse-suite-eks.yaml
 $ kubectl apply -f dse-suite-eks.yaml
 ```
 
-#### 4. Running DSE + OpsCenter on Google Kubernetes Engine (GKE)
+#### 4. Running DSE + OpsCenter on Google Kubernetes Engine (GKE) [sample]
 *This yamls set uses kubernetes.io/gce-pd provisioner along with pd-ssd persistent disk type*
 ```
 $ wget --quiet https://github.com/DSPN/kubernetes-dse/raw/master/gke/dse-suite.yaml -O dse-suite-gke.yaml
