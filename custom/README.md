@@ -28,7 +28,7 @@ ip-10-123-45-67.us-west-2.compute.internal   Ready     <none>    6d        v1.9.
 2. After deriving the IP address from the hostname, hit it at port 30888 in a web browser, ex: ```http://10.123.45.67:30888```
 
 ## Connecting via CQL outside of k8s
-1. Find the IP Address of any k8s node (it doesn't matter whether OpsCenter is actually running on that node). Ex:
+1. Find the IP Address of any k8s node (it doesn't matter whether DSE is actually running on that node). Ex:
 ```
 $ kubectl get no
 NAME                                          STATUS    ROLES     AGE       VERSION
