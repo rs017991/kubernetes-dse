@@ -157,7 +157,7 @@ spec:
         - containerPort: 7000
           name: intra-node-port
         - containerPort: 7001
-          name: tls-intra-node-port
+          name: tls-intra-node
         - containerPort: 7199
           name: jmx-port
         - containerPort: 8609
