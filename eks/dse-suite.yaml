@@ -78,6 +78,8 @@ spec:
   ports:
   - port: 9042
     name: cql-port
+  - port: 9142
+    name: tls-cql-port
   clusterIP: None
   selector:
     app: dse
@@ -91,9 +93,6 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 9042
-    nodePort: 30942
-    name: cql-port
   - port: 9142
     nodePort: 30943
     name: tls-cql-port
@@ -154,8 +153,6 @@ spec:
         - name: OPSCENTER_IP
           value: opscenter-0.opscenter.dse.svc.cluster.local
         ports:
-        - containerPort: 7000
-          name: intra-node-port
         - containerPort: 7001
           name: tls-intra-node
         - containerPort: 7199
@@ -166,10 +163,6 @@ spec:
           name: cql-port
         - containerPort: 9142
           name: tls-cql-port
-        - containerPort: 5598
-          name: dsefs-public
-        - containerPort: 5599
-          name: dsefs-private
         - containerPort: 61621
           name: ds-agent-port
         volumeMounts:
