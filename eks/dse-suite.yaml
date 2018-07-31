@@ -5,8 +5,7 @@ metadata:
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: io1
-  zone: us-west-2a
-  iopsPerGB: "10"
+  iopsPerGB: "1"
   fsType: ext4
 ---
 apiVersion: v1
@@ -16,9 +15,10 @@ metadata:
   labels:
     app: opscenter
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - port: 8888
+    nodePort: 30888
     name: opsc-gui-port
   selector:
     app: opscenter
@@ -82,6 +82,24 @@ spec:
   selector:
     app: dse
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dse-lb
+  labels:
+    app: dse
+spec:
+  type: NodePort
+  ports:
+  - port: 9042
+    nodePort: 30942
+    name: cql-port
+  - port: 9142
+    nodePort: 30943
+    name: tls-cql-port
+  selector:
+    app: dse
+---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -112,17 +130,17 @@ spec:
       containers:
       - name: dse
         image: gcr.io/datastax-public/dse-server:6.0.0
-        args: [ "dse", "cassandra", "-s", "-k", "-g", "-f"]
+        args: [ "dse", "cassandra", "-f"]
         imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: "1"
-            memory: "2000Mi"
+            memory: "3000Mi"
         env:
         - name: DS_LICENSE
           value: accept
         - name: SEEDS
-          value: dse-0.dse.default.svc.cluster.local
+          value: dse-0.dse.dse.svc.cluster.local,dse-1.dse.dse.svc.cluster.local
         - name: CLUSTER_NAME
           value: "Test Cluster"
         - name: NUM_TOKENS
@@ -134,40 +152,20 @@ spec:
         - name: DSE_DATA
           value: dse-data
         - name: OPSCENTER_IP
-          value: opscenter-0.opscenter.default.svc.cluster.local
+          value: opscenter-0.opscenter.dse.svc.cluster.local
         ports:
         - containerPort: 7000
           name: intra-node-port
         - containerPort: 7001
-          name: tls-intra-node
+          name: tls-intra-node-port
         - containerPort: 7199
           name: jmx-port
         - containerPort: 8609
           name: inter-node-msg
         - containerPort: 9042
           name: cql-port
-        - containerPort: 9160
-          name: thrift-port
-        - containerPort: 8983
-          name: solr-port
-        - containerPort: 8984
-          name: solr-int-node
-        - containerPort: 4040
-          name: spark-app-port
-        - containerPort: 7077
-          name: spark-int-node
-        - containerPort: 7080
-          name: spark-m-web
-        - containerPort: 7081
-          name: spark-w-web
-        - containerPort: 8090
-          name: spark-job
-        - containerPort: 9999
-          name: spark-job-jmx
-        - containerPort: 18080
-          name: spark-histor
-        - containerPort: 8182
-          name: gremlin-port
+        - containerPort: 9142
+          name: tls-cql-port
         - containerPort: 5598
           name: dsefs-public
         - containerPort: 5599
@@ -177,13 +175,29 @@ spec:
         volumeMounts:
         - name: dse-data
           mountPath: /dse-data
+        - name: config-volume
+          mountPath: /config
+        - name: secrets-volume
+          mountPath: /secrets
         livenessProbe:
           tcpSocket:
-            port: 9042
+            port: 9142
           initialDelaySeconds: 900
           timeoutSeconds: 1
           periodSeconds: 30
           failureThreshold: 10
+      volumes:
+      - name: config-volume
+        configMap:
+          name: dse-config
+      - name: secrets-volume
+        secret:
+          secretName: dse-secrets
+          items:
+          - key: identity.jks
+            path: .keystore
+          - key: cacerts #TODO this should be a configMap, but k8s doesn't support binary files in config maps until 1.10 (we're on 1.9)
+            path: cacerts
   volumeClaimTemplates:
   - metadata:
       name: dse-data
@@ -193,7 +207,7 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 40Gi
+          storage: 8Gi
 ---
 apiVersion: batch/v1
 kind: Job
@@ -210,8 +224,8 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: SEED_DNS
-          value: dse-0.dse.default.svc.cluster.local
+          value: dse-0.dse.dse.svc.cluster.local
         - name: OPSC_DNS
-          value: opscenter-0.opscenter.default.svc.cluster.local
+          value: opscenter-0.opscenter.dse.svc.cluster.local
       restartPolicy: Never
   backoffLimit: 8
