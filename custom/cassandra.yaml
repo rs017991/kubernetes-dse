@@ -321,7 +321,7 @@ prepared_statements_cache_size_mb:
 # headroom for OS block level cache. Do never allow your system to swap.
 #
 # Default value is 0, to disable row caching.
-row_cache_size_in_mb: 0
+row_cache_size_in_mb: 200
 
 # Duration in seconds after which Cassandra should save the row cache.
 # Caches are saved to saved_caches_directory as specified in this configuration file.
@@ -350,7 +350,7 @@ row_cache_save_period: 0
 #
 # Default value is empty to make it "auto" (min(2.5% of Heap (in MB), 50MB)). Set to 0 to disable counter cache.
 # NOTE: if you perform counter deletes and rely on low gcgs, you should disable the counter cache.
-counter_cache_size_in_mb:
+counter_cache_size_in_mb: 0
 
 # Duration in seconds after which Cassandra should
 # save the counter cache (keys only). Caches are saved to saved_caches_directory as
@@ -404,15 +404,13 @@ commitlog_sync_period_in_ms: 10000
 # NOTE: If max_mutation_size_in_kb is set explicitly then commitlog_segment_size_in_mb must
 # be set to at least twice the size of max_mutation_size_in_kb / 1024
 #
-commitlog_segment_size_in_mb: 32
+commitlog_segment_size_in_mb: 256
 
 # Compression to apply to the commit log. If omitted, the commit log
 # will be written uncompressed.  LZ4, Snappy, and Deflate compressors
 # are supported.
-# commitlog_compression:
-#   - class_name: LZ4Compressor
-#     parameters:
-#         -
+commitlog_compression:
+    - class_name: LZ4Compressor
 
 # any class that implements the SeedProvider interface and has a
 # constructor that takes a Map<String, String> of parameters will do.
@@ -495,7 +493,7 @@ memtable_allocation_type: heap_buffers
 # commitlog_total_space_in_mb configuration parameter. The actual
 # value depends on the write workload.
 #
-# commitlog_total_space_in_mb: 8192
+commitlog_total_space_in_mb: 4096
 
 # This sets the number of memtable flush writer threads per disk
 # as well as the total number of memtables that can be flushed concurrently.
@@ -752,7 +750,7 @@ concurrent_materialized_view_builders: 2
 # 16 to 32 times the rate you are inserting data is more than sufficient.
 # Setting this to 0 disables throttling. Note that this account for all types
 # of compaction, including validation compaction.
-compaction_throughput_mb_per_sec: 16
+compaction_throughput_mb_per_sec: 32
 
 # When compacting, the replacement sstable(s) can be opened before they
 # are completely written, and used in place of the prior sstables for
@@ -784,7 +782,7 @@ sstable_preemptive_open_interval_in_mb: 50
 # How long the coordinator should wait for read operations to complete.
 # Lowest acceptable value is 10 ms. This timeout does not apply to
 # aggregated queries such as SELECT COUNT(*), MIN(x), etc.
-read_request_timeout_in_ms: 5000
+read_request_timeout_in_ms: 10000
 # How long the coordinator should wait for seq or index scans to complete.
 # Lowest acceptable value is 10 ms. This timeout does not apply to
 # aggregated queries such as SELECT COUNT(*), MIN(x), etc.
@@ -794,7 +792,7 @@ range_request_timeout_in_ms: 10000
 aggregated_request_timeout_in_ms: 120000
 # How long the coordinator should wait for writes to complete.
 # Lowest acceptable value is 10 ms.
-write_request_timeout_in_ms: 2000
+write_request_timeout_in_ms: 10000
 # How long the coordinator should wait for counter writes to complete.
 # Lowest acceptable value is 10 ms.
 counter_write_request_timeout_in_ms: 5000
@@ -1086,10 +1084,10 @@ tombstone_failure_threshold: 100000
 
 # Log WARN on any multiple-partition batch size exceeding this value. 64kb per batch by default.
 # Caution should be taken on increasing the size of this threshold as it can lead to node instability.
-batch_size_warn_threshold_in_kb: 64
+batch_size_warn_threshold_in_kb: 192
 
 # Fail any multiple-partition batch exceeding this value. 640kb (10x warn threshold) by default.
-batch_size_fail_threshold_in_kb: 640
+batch_size_fail_threshold_in_kb: 102401
 
 # Log WARN on any batches not of type LOGGED than span across more partitions than this limit
 unlogged_batch_across_partitions_warn_threshold: 10
