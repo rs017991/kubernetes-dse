@@ -109,7 +109,7 @@ spec:
       containers:
       - name: dse
         image: gcr.io/datastax-public/dse-server:6.0.0
-        args: [ "dse", "cassandra", "-s", "-k", "-g", "-f"]
+        args: [ "dse", "cassandra", "-f"]
         imagePullPolicy: IfNotPresent
         resources:
           requests:
@@ -132,6 +132,8 @@ spec:
           value: dse-data
         - name: OPSCENTER_IP
           value: opscenter-0.opscenter.default.svc.cluster.local
+        - name: SNITCH
+          value: GossipingPropertyFileSnitch
         ports:
         - containerPort: 7000
           name: intra-node-port
