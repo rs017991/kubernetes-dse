@@ -67,6 +67,18 @@ spec:
             name: opsc-gui-port
           - containerPort: 61620
             name: port-61620
+          volumeMounts:
+          - name: secrets-volume
+            mountPath: /secrets
+      volumes:
+      - name: secrets-volume
+        secret:
+          secretName: dse-secrets
+          items:
+          - key: identity.jks
+            path: .keystore
+          - key: cacerts #TODO this should be a configMap, but k8s doesn't support binary files in config maps until 1.10 (we're on 1.9)
+            path: cacerts
 ---
 apiVersion: v1
 kind: Service

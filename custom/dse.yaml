@@ -62,7 +62,7 @@
 #                authentication fails, an authentication error is returned. If no
 #                credentials are passed, the user is logged in as anonymous
 authentication_options:
-    enabled: false
+    enabled: true
     default_scheme: internal
 #     other_schemes:
 #     scheme_permissions: false
@@ -107,7 +107,7 @@ role_management_options:
 # allow_row_level_security - To use row level security, set to true for the entire system. 
 #                            Use the same setting on all nodes.
 authorization_options:
-    enabled: false
+    enabled: true
 #     transitional_mode: disabled
 #     allow_row_level_security: false
 
