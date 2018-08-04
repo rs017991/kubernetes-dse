@@ -1,7 +1,7 @@
 # kubernetes-dse
 Deploy DataStax Enterprise (DSE) cluster on a Kubernetes cluster
 
-This project provides a set of sample Kubernetes yamls to provision DataStax Enterprise in a Kubernetes cluster environment on various cloud platforms for experimental only. It uses "default" namespace in Kubernetes and sample cloud provider's storage class definition. You would modify the yamls according to your own deployment requirements such as namespace, cloud provider zone, etc.
+This project provides a set of sample Kubernetes yamls to provision DataStax Enterprise in a Kubernetes cluster environment on various cloud platforms for experimental only. It uses "default" namespace in Kubernetes and sample cloud provider's storage class definition. You would modify the yamls according to your own deployment requirements such as namespace, storage device type, cloud provider zone, etc.
 
 #### Prerequisites:
 * Tools including wget, kubectl have already been installed on your machine to execute our yamls.
