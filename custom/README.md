@@ -2,10 +2,13 @@
 1. Create **dse** namespace: ```kubectl create -f dse-namespace.yml```
 2. Update your context to use the new namespace: ```kubectl config set-context mycontext -n dse```
 3. Make sure you are using that context, whatever it is called: ```kubectl config use-context mycontext```
-4. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml```
-5. **identity.jks** dummy file must be replaced with a keystore that contains a new private key.
-6. **cacerts** dummy file must be replaced with a certificate store that trusts the new private key.
-7. Upload these as secrets: ```kubectl create secret generic dse-secrets --from-file=identity.jks --from-file=cacerts```
+4. **identity.jks** dummy file must be replaced with a keystore that contains a new private key.
+5. **identity.pkcs8.pem** dummy file must be replaced with the private key, exported without a password
+6. **identity.x509.pem** dummy file must be replaced with the certificate of the new private key
+7. **trusted.x509.pem** dummy file must be replaced with a certificate of an appropriate link in the trust chain of the new keypair
+8. **cacerts** dummy file must be replaced with a certificate store that contains the above x509 certs
+9. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml --from-file=cqlshrc --from-file=identity.x509.pem --from-file=trusted.x509.pem```
+10. Upload the secrets: ```create secret generic dse-secrets --from-file=identity.jks --from-file=identity.pkcs8.pem --from-file=cacerts```
 
 # Creating the Cluster
 ```kubectl apply -f ../eks/dse-suite.yaml```

@@ -1,0 +1,8 @@
+[connection]
+ssl = true
+port = 9142
+
+[ssl]
+certfile = /config/trusted.x509.pem
+usercert = /config/identity.x509.pem
+userkey = /secrets/identity.pkcs8.pem

@@ -88,8 +88,6 @@ metadata:
     app: dse
 spec:
   ports:
-  - port: 9042
-    name: cql-port
   - port: 9142
     name: tls-cql-port
   clusterIP: None
@@ -171,8 +169,6 @@ spec:
           name: jmx-port
         - containerPort: 8609
           name: inter-node-msg
-        - containerPort: 9042
-          name: cql-port
         - containerPort: 9142
           name: tls-cql-port
         - containerPort: 61621
@@ -203,6 +199,8 @@ spec:
             path: .keystore
           - key: cacerts #TODO this should be a configMap, but k8s doesn't support binary files in config maps until 1.10 (we're on 1.9)
             path: cacerts
+          - key: identity.pkcs8.pem
+            path: identity.pkcs8.pem
   volumeClaimTemplates:
   - metadata:
       name: dse-data
