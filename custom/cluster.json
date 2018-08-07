@@ -11,6 +11,15 @@
   },
   "cassandra_metrics": {},
   "jmx": {
-    "port": "7199"
+    "port": "7199",
+    "username": "cassandra",
+    "password": "cassandra"
+  },
+  "agents": {
+    "use_ssl": false,
+	"ssl_keystore": "/secrets/.keystore",
+	"ssl_keystore_password": "cassandra",
+	"ssl_truststore": "/secrets/cacerts",
+	"ssl_truststore_password": "cassandra"
   }
 }

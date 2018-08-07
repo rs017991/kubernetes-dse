@@ -162,6 +162,10 @@ spec:
           value: dse-data
         - name: OPSCENTER_IP
           value: opscenter-0.opscenter.dse.svc.cluster.local
+        - name: LOCAL_JMX
+          value: 'no'
+        - name: JVM_EXTRA_OPTS
+          value: '-Dcom.sun.management.jmxremote.password.file=/secrets/jmxremote.password'
         ports:
         - containerPort: 7001
           name: tls-intra-node
@@ -183,9 +187,9 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 9142
-          initialDelaySeconds: 900
+          initialDelaySeconds: 100
           timeoutSeconds: 1
-          periodSeconds: 30
+          periodSeconds: 10
           failureThreshold: 10
       volumes:
       - name: config-volume
@@ -201,6 +205,8 @@ spec:
             path: cacerts
           - key: identity.pkcs8.pem
             path: identity.pkcs8.pem
+          - key: jmxremote.password
+            path: jmxremote.password
   volumeClaimTemplates:
   - metadata:
       name: dse-data

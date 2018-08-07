@@ -271,4 +271,13 @@
 # and tasks scheduled from TPC tasks.
 -Dio.netty.eventLoop.maxPendingTasks=65536
 
+##################
+#  JMX SETTINGS  #
+##################
+
+### Auth:
+-Dcom.sun.management.jmxremote.authenticate=true
+-Dcom.sun.management.jmxremote.access.file=/config/jmxremote.access
+# This one doesn't work with cassandra-env.sh: -Dcom.sun.management.jmxremote.password.file=/secrets/jmxremote.password
+
 # The newline in the end of file is intentional
