@@ -74,11 +74,6 @@ spec:
       - name: secrets-volume
         secret:
           secretName: dse-secrets
-          items:
-          - key: identity.jks
-            path: .keystore
-          - key: cacerts #TODO this should be a configMap, but k8s doesn't support binary files in config maps until 1.10 (we're on 1.9)
-            path: cacerts
 ---
 apiVersion: v1
 kind: Service
@@ -144,14 +139,14 @@ spec:
         resources:
           requests:
             cpu: "1"
-            memory: "3000Mi"
+            memory: 3000Mi
         env:
         - name: DS_LICENSE
           value: accept
         - name: SEEDS
           value: dse-0.dse.dse.svc.cluster.local,dse-1.dse.dse.svc.cluster.local
         - name: CLUSTER_NAME
-          value: "Test Cluster"
+          value: PKS Dev
         - name: NUM_TOKENS
           value: "64"
         - name: DC
@@ -198,15 +193,6 @@ spec:
       - name: secrets-volume
         secret:
           secretName: dse-secrets
-          items:
-          - key: identity.jks
-            path: .keystore
-          - key: cacerts #TODO this should be a configMap, but k8s doesn't support binary files in config maps until 1.10 (we're on 1.9)
-            path: cacerts
-          - key: identity.pkcs8.pem
-            path: identity.pkcs8.pem
-          - key: jmxremote.password
-            path: jmxremote.password
   volumeClaimTemplates:
   - metadata:
       name: dse-data

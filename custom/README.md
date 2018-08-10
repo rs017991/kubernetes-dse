@@ -8,7 +8,7 @@
 7. **trusted.x509.pem** dummy file must be replaced with a certificate of an appropriate link in the trust chain of the new keypair
 8. **cacerts** dummy file must be replaced with a certificate store that contains the above x509 certs
 9. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml --from-file=cqlshrc --from-file=identity.x509.pem --from-file=trusted.x509.pem --from-file=jmxremote.access --from-file=jvm.options --from-file=nodetool-ssl.properties```
-10. Upload the secrets: ```create secret generic dse-secrets --from-file=identity.jks --from-file=identity.pkcs8.pem --from-file=cacerts --from-file=jmxremote.password```
+10. Upload the secrets: ```create secret generic dse-secrets --from-file=.keystore=identity.jks --from-file=identity.pkcs8.pem --from-file=cacerts --from-file=jmxremote.password```
 
 # Creating the Cluster
 ```kubectl apply -f ../eks/dse-suite.yaml```
@@ -16,7 +16,7 @@
 # Interacting with the Cluster
 
 ## Some Basic Cassandra operations
-* Nodetool Commands: ```kubectl exec dse-0 -- nodetool -u cassandra -pw cassandra status```
+* Nodetool Commands: ```kubectl exec dse-0 -- nodetool --ssl -u cassandra -pw cassandra status```
 * Interactive cqlsh: ```kubectl exec -ti dse-0 -- cqlsh dse-0 -u cassandra -p cassandra```
 * Run local cql file: ```cat myschema.sql | kubectl exec -i dse-0 -- cqlsh dse-0 -u cassandra -p cassandra```
 * View logs: ```kubectl logs dse-0```
