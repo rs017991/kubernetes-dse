@@ -150,9 +150,9 @@ spec:
         - name: NUM_TOKENS
           value: "64"
         - name: DC
-          value: "DC-1"
+          value: realtime
         - name: RACK
-          value: "rack-1"
+          value: NA
         - name: DSE_DATA
           value: dse-data
         - name: OPSCENTER_IP
