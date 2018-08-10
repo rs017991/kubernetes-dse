@@ -65,3 +65,4 @@ resources/spark/conf/docker.properties.template
 .cassandra/nodetool-ssl.properties
 .cassandra/cqlshrc
 .dserc
+../agent/conf/datastax-agent-env.sh
