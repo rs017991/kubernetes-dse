@@ -280,4 +280,13 @@
 -Dcom.sun.management.jmxremote.access.file=/config/jmxremote.access
 # This one doesn't work with cassandra-env.sh: -Dcom.sun.management.jmxremote.password.file=/secrets/jmxremote.password
 
+### TLS:
+-Dcom.sun.management.jmxremote.ssl=true
+-Dcom.sun.management.jmxremote.ssl.need.client.auth=true
+-Dcom.sun.management.jmxremote.registry.ssl=true
+-Djavax.net.ssl.keyStore=/secrets/.keystore
+-Djavax.net.ssl.keyStorePassword=cassandra
+-Djavax.net.ssl.trustStore=/secrets/cacerts
+-Djavax.net.ssl.trustStorePassword=cassandra
+
 # The newline in the end of file is intentional

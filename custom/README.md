@@ -7,7 +7,7 @@
 6. **identity.x509.pem** dummy file must be replaced with the certificate of the new private key
 7. **trusted.x509.pem** dummy file must be replaced with a certificate of an appropriate link in the trust chain of the new keypair
 8. **cacerts** dummy file must be replaced with a certificate store that contains the above x509 certs
-9. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml --from-file=cqlshrc --from-file=identity.x509.pem --from-file=trusted.x509.pem --from-file=jmxremote.access --from-file=jvm.options```
+9. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml --from-file=cqlshrc --from-file=identity.x509.pem --from-file=trusted.x509.pem --from-file=jmxremote.access --from-file=jvm.options --from-file=nodetool-ssl.properties```
 10. Upload the secrets: ```create secret generic dse-secrets --from-file=identity.jks --from-file=identity.pkcs8.pem --from-file=cacerts --from-file=jmxremote.password```
 
 # Creating the Cluster

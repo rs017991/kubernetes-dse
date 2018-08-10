@@ -138,7 +138,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: dse
-        image: gcr.io/datastax-public/dse-server:6.0.0
+        image: rs017991/dse-server:0.0.0
         args: [ "dse", "cassandra", "-f"]
         imagePullPolicy: IfNotPresent
         resources:

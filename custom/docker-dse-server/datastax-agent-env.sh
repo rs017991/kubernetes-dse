@@ -1,1 +1,1 @@
-JVM_OPTS="$JVM_OPTS -Xmx1024M"
+JVM_OPTS="$JVM_OPTS -Xmx1024M -Dcom.sun.management.jmxremote.ssl=true -Dcom.sun.management.jmxremote.ssl.need.client.auth=true -Dcom.sun.management.jmxremote.registry.ssl=true -Djavax.net.ssl.keyStore=/secrets/.keystore -Djavax.net.ssl.keyStorePassword=cassandra -Djavax.net.ssl.trustStore=/secrets/cacerts -Djavax.net.ssl.trustStorePassword=cassandra -Ddatastax.agent.jmx.usessl=true"

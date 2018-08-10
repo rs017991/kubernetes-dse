@@ -62,5 +62,6 @@ resources/spark/conf/spark-daemon-defaults.conf
 resources/spark/conf/spark-defaults.conf
 resources/spark/spark-jobserver/dse.conf
 resources/spark/conf/docker.properties.template
+.cassandra/nodetool-ssl.properties
 .cassandra/cqlshrc
 .dserc
