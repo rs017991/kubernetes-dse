@@ -51,6 +51,8 @@ $ kubectl get job dse-cluster-init-job
 ```
 Once complete, you can access the DataStax Enterprise OpsCenter web console to view the newly created DSE cluster by pointing your browser at http://<svc/opscenter-ext-lb's EXTERNAL-IP>:8888
 
+Use "kubectl get service opscenter-ext-lb -o yaml" to see EXTERNAL-IP of the loadBalancer
+
 **Step Three: Tear down the DSE deployment**
 ```
 $ kubectl delete -f dse-suite-<your cloud platform choice>.yaml (the same yaml file you used in step one above)
