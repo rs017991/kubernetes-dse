@@ -1,6 +1,6 @@
 # Initial Setup
 1. Create **dse** namespace: ```kubectl create -f dse-namespace.yml```
-2. Update your context to use the new namespace: ```kubectl config set-context mycontext -n dse```
+2. Update your context to use the new namespace: ```kubectl config set-context mycontext --namespace=dse```
 3. Make sure you are using that context, whatever it is called: ```kubectl config use-context mycontext```
 4. **identity.jks** dummy file must be replaced with a keystore that contains a new private key.
 5. **identity.pkcs8.pem** dummy file must be replaced with the private key, exported without a password
