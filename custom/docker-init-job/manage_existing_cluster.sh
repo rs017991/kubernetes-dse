@@ -8,6 +8,7 @@ opsc_dns=${OPSC_DNS}
 cluster_size=${CLUSTER_SIZE}
 cluster_name=${CLUSTER_NAME}
 opsc_admin_password=${OPSC_ADMIN_PASSWORD}
+cluster_file=${CLUSTER_FILE:-/config.json}
 
 
 # Get a session id for auth-access
@@ -35,7 +36,8 @@ token=$(echo $json | tr -d '{} ' | awk -F':' {'print $2'} | tr -d '"')
 
 
 # Add the DSE cluster to OPSC
-tee config.json > /dev/null <<EOF
+if [ ! -f $cluster_file ]; then
+    tee $cluster_file > /dev/null <<EOF
 { 
   "cassandra": {
     "seed_hosts": "$seed_node_dns"
@@ -46,10 +48,11 @@ tee config.json > /dev/null <<EOF
   }
 }
 EOF
+fi
 
 output="temp"
 while [ "${output}" != "\"${cluster_name}\"" ]; do
-    output=`curl -s -k -H 'opscenter-session: '$token -H 'Accept: application/json' -X POST https://$opsc_dns:8443/cluster-configs -d @config.json`
+    output=`curl -s -k -H 'opscenter-session: '$token -H 'Accept: application/json' -X POST https://$opsc_dns:8443/cluster-configs -d @$cluster_file`
     echo $output
     sleep 5
 done
