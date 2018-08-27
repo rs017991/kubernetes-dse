@@ -9,6 +9,10 @@
 8. **cacerts** dummy file must be replaced with a certificate store that contains the above x509 certs
 9. Upload the configuration: ```kubectl create configmap dse-config --from-file=cassandra.yaml --from-file=dse.yaml --from-file=cqlshrc --from-file=identity.x509.pem --from-file=trusted.x509.pem --from-file=jmxremote.access --from-file=jvm.options --from-file=nodetool-ssl.properties --from-file=datastax-agent-env.sh```
 10. Upload the secrets: ```create secret generic dse-secrets --from-file=.keystore=identity.jks --from-file=identity.pkcs8.pem --from-file=cacerts --from-file=jmxremote.password```
+11. Upload the OpsCenter configuration: ```kubectl create configmap opsc-config --from-file=../common/opscenter/conf-dir/agent/conf  --from-file=../common/opscenter/conf-dir/conf  --from-file=../common/opscenter/conf-dir/conf/event-plugins```
+12. Upload the OpsCenter secrets: ```kubectl apply -f ../common/secrets/opsc-secrets.yaml```
+13. Upload the OpsCenter SSL config: ```kubectl create configmap opsc-ssl-config  --from-file=../common/opscenter/conf-dir/conf/ssl```
+14. Upload the OpsCenter cluster file: ```kubectl create secret generic cluster-config --from-file=config.json=cluster.json```
 
 # Creating the Cluster
 ```kubectl apply -f ../eks/dse-suite.yaml```
@@ -28,9 +32,7 @@ $ kubectl get no
 NAME                                          STATUS    ROLES     AGE       VERSION
 ip-10-123-45-67.us-west-2.compute.internal   Ready     <none>    6d        v1.9.6
 ```
-2. After deriving the IP address from the hostname, hit it at port 30888 in a web browser, ex: ```http://10.123.45.67:30888```
-3. Since the init script doesn't support TLS or Authentication, you will need to manually upload the cluster json:
-    * ```curl -Uri http://10.123.45.67:30888/cluster-configs -Method POST -InFile cluster.json```
+2. After deriving the IP address from the hostname, hit it at port 30843 in a web browser, ex: ```https://10.123.45.67:30843```
 
 ## Connecting via CQL outside of k8s
 1. Find the IP Address of any k8s node (it doesn't matter whether DSE is actually running on that node). Ex:

@@ -20,6 +20,9 @@ spec:
   - port: 8888
     nodePort: 30888
     name: opsc-gui-port
+  - port: 8443
+    nodePort: 30843
+    name: opsc-secure-port
   selector:
     app: opscenter
 ---
@@ -33,6 +36,8 @@ spec:
   ports:
   - port: 8888
     name: opsc-gui-port
+  - port: 8443
+    name: opsc-secure-port
   - port: 61620
     name: port-61620
   clusterIP: None
@@ -53,24 +58,47 @@ spec:
     spec:
       containers:
         - name: opscenter
-          image: datastax/dse-opscenter:6.5.0
+          image: gcr.io/datastax-public/dse-opscenter:6.5.0
           imagePullPolicy: IfNotPresent
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/update_admin_password.sh"]
           resources:
             requests:
               cpu: "1"
-              memory: "2000Mi"
+              memory: "4000Mi"
           env:
           - name: DS_LICENSE
             value: accept
+          - name: OPSC_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: opsc
+                key: admin_password 
           ports:
           - containerPort: 8888
             name: opsc-gui-port
           - containerPort: 61620
             name: port-61620
           volumeMounts:
+          - name: config-volume
+            mountPath: /config
+          - name: config-clusters-volume
+            mountPath: /opt/opscenter/conf/clusters
+          - name: ssl-store-volume
+            mountPath: /var/lib/opscenter/ssl
           - name: secrets-volume
             mountPath: /secrets
       volumes:
+      - name: config-volume
+        configMap:
+          name: opsc-config
+      - name: config-clusters-volume
+        emptyDir: {}
+      - name: ssl-store-volume
+        configMap:
+          name: opsc-ssl-config
       - name: secrets-volume
         secret:
           secretName: dse-secrets
@@ -131,30 +159,34 @@ spec:
                 values:
                 - dse
             topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: init-opsc-up
+        image: tutum/curl
+        command: ['sh', '-c', 'until curl -k https://${OPSC_DNS}:8443; do echo waiting for OPSC; sleep 5; done;']
+        env:
+        - name: OPSC_DNS
+          value: opscenter-0.opscenter.dse.svc.cluster.local
       containers:
       - name: dse
-        image: rs017991/dse-server:0.0.0
-        args: [ "dse", "cassandra", "-f"]
+        image: rs017991/dse-server:0.0.2
         imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: "1"
-            memory: 3000Mi
+            memory: 4000Mi
         env:
         - name: DS_LICENSE
           value: accept
         - name: SEEDS
           value: dse-0.dse.dse.svc.cluster.local,dse-1.dse.dse.svc.cluster.local
         - name: CLUSTER_NAME
-          value: PKS Dev
+          value: PKS_Dev
         - name: NUM_TOKENS
           value: "64"
         - name: DC
           value: realtime
         - name: RACK
           value: NA
-        - name: DSE_DATA
-          value: dse-data
         - name: OPSCENTER_IP
           value: opscenter-0.opscenter.dse.svc.cluster.local
         - name: LOCAL_JMX
@@ -174,7 +206,7 @@ spec:
           name: ds-agent-port
         volumeMounts:
         - name: dse-data
-          mountPath: /dse-data
+          mountPath: /var/lib/cassandra
         - name: config-volume
           mountPath: /config
         - name: secrets-volume
@@ -186,6 +218,10 @@ spec:
           timeoutSeconds: 1
           periodSeconds: 10
           failureThreshold: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "exec nodetool decommission"]
       volumes:
       - name: config-volume
         configMap:
@@ -213,14 +249,39 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      - name: init-opsc-up
+        image: tutum/curl
+        command: ['sh', '-c', 'until curl -k https://${OPSC_DNS}:8443; do echo waiting for OPSC; sleep 5; done;']
+        env:
+        - name: OPSC_DNS
+          value: opscenter-0.opscenter.dse.svc.cluster.local
       containers:
       - name: dse-cluster-init
-        image: gcr.io/datastax-public/dse-cluster-init:6.0.0
+        image: rs017991/dse-cluster-init:0.0.3
         imagePullPolicy: IfNotPresent
         env:
         - name: SEED_DNS
-          value: dse-0.dse.dse.svc.cluster.local
+          value: dse-0.dse.dse.svc.cluster.local,dse-1.dse.dse.svc.cluster.local
+        - name: CLUSTER_NAME
+          value: PKS_Dev
+        - name: CLUSTER_SIZE
+          value: "3"
         - name: OPSC_DNS
           value: opscenter-0.opscenter.dse.svc.cluster.local
+        - name: OPSC_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: opsc
+              key: admin_password
+        - name: CLUSTER_FILE
+          value: /cluster-config/config.json
+        volumeMounts:
+        - name: cluster-config
+          mountPath: /cluster-config
+      volumes:
+      - name: cluster-config
+        secret:
+          secretName: cluster-config
       restartPolicy: Never
   backoffLimit: 8

@@ -9,6 +9,8 @@ spec:
   ports:
   - port: 8888
     name: opsc-gui-port
+  - port: 8443
+    name: opsc-secure-port
   selector:
     app: opscenter
 ---
@@ -22,6 +24,8 @@ spec:
   ports:
   - port: 8888
     name: opsc-gui-port
+  - port: 8443
+    name: opsc-secure-port
   - port: 61620
     name: port-61620
   clusterIP: None
@@ -42,20 +46,45 @@ spec:
     spec:
       containers:
         - name: opscenter
-          image: datastax/dse-opscenter:6.5.0
+          image: gcr.io/datastax-public/dse-opscenter:6.5.0
           imagePullPolicy: IfNotPresent
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/update_admin_password.sh"]
           resources:
             requests:
-              cpu: "1"
-              memory: "2000Mi"
+              cpu: "2"
+              memory: "4000Mi"
           env:
           - name: DS_LICENSE
             value: accept
+          - name: OPSC_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: opsc
+                key: admin_password 
           ports:
           - containerPort: 8888
             name: opsc-gui-port
           - containerPort: 61620
             name: port-61620
+          volumeMounts:
+          - name: config-volume
+            mountPath: /config
+          - name: config-clusters-volume
+            mountPath: /opt/opscenter/conf/clusters
+          - name: ssl-store-volume
+            mountPath: /var/lib/opscenter/ssl
+      volumes:
+      - name: config-volume
+        configMap:
+          name: opsc-config
+      - name: config-clusters-volume
+        emptyDir: {}
+      - name: ssl-store-volume
+        configMap:
+          name: opsc-ssl-config
 ---
 apiVersion: v1
 kind: Service
@@ -98,34 +127,38 @@ spec:
                 values:
                 - dse
             topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: init-opsc-up
+        image: tutum/curl
+        command: ['sh', '-c', 'until curl -k https://${OPSC_DNS}:8443; do echo waiting for OPSC; sleep 5; done;']
+        env:
+        - name: OPSC_DNS
+          value: opscenter-0.opscenter.default.svc.cluster.local
       containers:
       - name: dse
-        image: gcr.io/datastax-public/dse-server:6.0.0
-        args: [ "dse", "cassandra", "-f"]
+        image: datastax/dse-server:6.0.0
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            cpu: "1"
-            memory: "2000Mi"
+            cpu: "2"
+            memory: "4000Mi"
         env:
         - name: DS_LICENSE
           value: accept
         - name: SEEDS
-          value: dse-0.dse.default.svc.cluster.local
+          value: dse-0.dse.default.svc.cluster.local,dse-1.dse.default.svc.cluster.local,dse-2.dse.default.svc.cluster.local
         - name: CLUSTER_NAME
-          value: "Test Cluster"
+          value: "My_Cluster"
         - name: NUM_TOKENS
           value: "64"
         - name: DC
           value: "DC-1"
         - name: RACK
           value: "rack-1"
-        - name: DSE_DATA
-          value: dse-data
         - name: OPSCENTER_IP
           value: opscenter-0.opscenter.default.svc.cluster.local
         - name: SNITCH
-          value: GossipingPropertyFileSnitch         
+          value: GossipingPropertyFileSnitch
         ports:
         - containerPort: 7000
           name: intra-node-port
@@ -167,7 +200,9 @@ spec:
           name: ds-agent-port
         volumeMounts:
         - name: dse-data
-          mountPath: /dse-data
+          mountPath: /var/lib/cassandra
+        - name: config-volume
+          mountPath: /config
         livenessProbe:
           tcpSocket:
             port: 9042
@@ -175,7 +210,14 @@ spec:
           timeoutSeconds: 1
           periodSeconds: 30
           failureThreshold: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "exec nodetool decommission"]
       volumes:
+      - name: config-volume
+        configMap:
+          name: dse-config
       - name: dse-data
         emptyDir: {}
 ---
@@ -188,14 +230,30 @@ metadata:
 spec:
   template:
     spec:
-      containers:
-      - name: dse-cluster-init
-        image: gcr.io/datastax-public/dse-cluster-init:6.0.0
-        imagePullPolicy: Always
+      initContainers:
+      - name: init-opsc-up
+        image: tutum/curl
+        command: ['sh', '-c', 'until curl -k https://${OPSC_DNS}:8443; do echo waiting for OPSC; sleep 5; done;']
         env:
-        - name: SEED_DNS
-          value: dse-0.dse.default.svc.cluster.local
         - name: OPSC_DNS
           value: opscenter-0.opscenter.default.svc.cluster.local
+      containers:
+      - name: dse-cluster-init
+        image: gcr.io/datastax-public/dse-cluster-init:6.5.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: SEED_DNS
+          value: dse-0.dse.default.svc.cluster.local,dse-1.dse.default.svc.cluster.local,dse-2.dse.default.svc.cluster.local
+        - name: CLUSTER_NAME
+          value: "My_Cluster"
+        - name: CLUSTER_SIZE
+          value: "3"
+        - name: OPSC_DNS
+          value: opscenter-0.opscenter.default.svc.cluster.local
+        - name: OPSC_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: opsc
+              key: admin_password
       restartPolicy: Never
   backoffLimit: 8

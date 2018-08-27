@@ -6,7 +6,7 @@
 
 # The name of the cluster. This is mainly used to prevent machines in
 # one logical cluster from joining another.
-cluster_name: 'Test Cluster'
+cluster_name: 'My_Cluster'
 
 # The number of tokens randomly assigned to this node on the ring.
 # The higher the token count is relative to other nodes, the larger the proportion of data
@@ -403,7 +403,7 @@ seed_provider:
       parameters:
           # seeds is actually a comma-delimited list of addresses.
           # Ex: "<ip1>,<ip2>,<ip3>"
-          - seeds: "dse-0.dse.dse.svc.cluster.local,dse-1.dse.dse.svc.cluster.local,dse-2.dse.dse.svc.cluster.local"
+          - seeds: "dse-0.dse.default.svc.cluster.local,dse-1.dse.default.svc.cluster.local,dse-2.dse.default.svc.cluster.local"
 
 # Maximum memory to use for SSTable chunk cache and buffer pooling.
 # 32 MB of this memory are reserved for pooling buffers, the rest is used as a

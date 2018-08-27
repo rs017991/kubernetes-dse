@@ -218,6 +218,10 @@ spec:
           timeoutSeconds: 1
           periodSeconds: 30
           failureThreshold: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "exec nodetool decommission"]
       volumes:
       - name: config-volume
         configMap:
